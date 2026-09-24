@@ -45,4 +45,4 @@ curl -fsSL --connect-timeout 10 --max-time 30 -o argocd https://github.com/argop
 sudo mv argocd /usr/local/bin && \
 sudo chmod +x /usr/local/bin/argocd
 
-echo "argocd login "$ARGOCD_URL" --username admin --password ${ADMIN_PWD} --insecure --grpc-web"
+echo "argocd login 127.0.0.1:30080 --username admin --password ${ADMIN_PWD} --insecure --grpc-web"
