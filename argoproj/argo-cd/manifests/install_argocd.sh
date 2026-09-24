@@ -1,11 +1,9 @@
 #!/bin/bash
 set -e
 
-# 1. Create namespace
 echo "===== Step1 Create argocd namespace ====="
 kubectl create namespace argocd || echo "namespace argocd already exists, skip"
 
-# 2. Apply Argo‑CD stable installation manifests with server‑side apply
 echo "\n===== Step2 Deploy Argo‑CD stable release ====="
 kubectl apply -n argocd --server-side --force-conflicts \
 -f https://raw.githubusercontent.com/zachary-sandbox/cdn/stable/argoproj/argo-cd/manifests/install.yaml
@@ -14,10 +12,9 @@ echo "\n===== Step3 Wait for secret argocd-initial-admin-secret to be created ==
 # Poll until secret becomes available; secret is generated after installation completes
 until kubectl get secret -n argocd argocd-initial-admin-secret >/dev/null 2>&1; do
     echo "Waiting for argocd-initial-admin-secret secret ..."
-    sleep 3
+    sleep 5
 done
 
-# 3. Fetch and decode admin password (secret data is base64‑encoded)
 echo "\n===== Step4 Retrieve initial admin password ====="
 ADMIN_PWD=$(kubectl get secret argocd-initial-admin-secret \
 -n argocd \
@@ -41,6 +38,11 @@ echo "Initial Admin Password: ${ADMIN_PWD}"
 echo "Port‑forward background PID: ${PF_PID}"
 echo "To stop port‑forward manually, execute: kill ${PF_PID}"
 
-# Optional: auto‑login using argocd CLI
 echo "\n===== Step6 (Optional) Try argocd CLI login ====="
+
+export ARGOCD_VERSION=v3.5.3 && \
+curl -fsSL --connect-timeout 10 --max-time 30 -o argocd https://github.com/argoproj/argo-cd/releases/download/$ARGOCD_VERSION/argocd-linux-amd64 && \
+sudo mv argocd /usr/local/bin && \
+sudo chmod +x /usr/local/bin/argocd
+
 echo "argocd login "$ARGOCD_URL" --username admin --password ${ADMIN_PWD} --insecure --grpc-web"
